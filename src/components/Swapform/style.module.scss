@@ -1,0 +1,43 @@
+.swapFormContainer{
+    position: relative;
+}
+
+.topBar{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.menuButton {
+
+}
+.orderType{
+    font-size: "24px";
+    font-style: "bold";
+}
+
+.header {
+    font-size: 20px;
+    display: flex;
+    justify-content: space-between;
+    margin: 10px 0;
+}
+.baseToken {
+    padding: 20px;
+}
+.targetToken {
+    border-radius: 10px;
+    background-color: #eee;
+    padding: 20px;
+}
+.tokenInputContainer{
+    display: flex;
+    justify-content: space-between;
+    margin: 10px 0;
+}
+.tokenInput{
+    background: #fff;
+}
+.tokenBtn{
+    font-size: 24px;
+    font-weight: bold;
+}
