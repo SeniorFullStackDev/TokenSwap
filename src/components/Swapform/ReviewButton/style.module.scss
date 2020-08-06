@@ -1,0 +1,9 @@
+.reviewBtnContainer{
+    position: relative;
+    display: flex;
+    justify-content: center;
+    .reviewBtn{
+        margin: auto;
+        width: 50%;
+    }
+}

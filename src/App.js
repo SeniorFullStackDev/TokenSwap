@@ -1,8 +1,7 @@
 import React from "react";
 import { Provider } from 'react-redux'
 import { createMuiTheme, ThemeProvider } from "@material-ui/core/styles";
-import { Web3Provider } from '@ethersproject/providers'
-import { createWeb3ReactRoot, Web3ReactProvider } from '@web3-react/core'
+import Web3Provider from 'web3-react'
 import config from "./components/common/config";
 import Page from "../src/components/common/Page";
 import "./App.css";
@@ -11,20 +10,11 @@ import TradePanel from "./components/tradeExecution/tradePanel";
 
 import Header from "./components/Header";
 import Web3ReactManager from "./components/Web3ReactManager";
+import { MetaMask, Infura } from "./connectors";
+import Web3 from 'web3';
 
 import NotFound from "./components/notFound";
 import store from './state';
-
-const Web3ProviderNetwork = createWeb3ReactRoot(NetworkContextName)
-if ('ethereum' in window) {
-  window.ethereum.autoRefreshOnNetworkChange = false
-}
-
-function getLibrary(provider){
-  const library = new Web3Provider(provider)
-  library.pollingInterval = 15000
-  return library
-}
 
 const theme = createMuiTheme({
   palette: {
@@ -65,18 +55,17 @@ function App() {
             className="container"
             style={{ background: config.bodyBackgroundColor }}
           >
-          <div className="App">
-          <Web3ReactProvider getLibrary={getLibrary}>
-            <Web3ProviderNetwork getLibrary={getLibrary}>
-              <Provider store={store}>
-                <Header/>
-                <Web3ReactManager>
-                  <TradePanel/>
-                </Web3ReactManager>
-              </Provider>
-            </Web3ProviderNetwork>
-          </Web3ReactProvider>
-          </div>
+            <div className="App">
+              <Web3Provider
+                connectors={{ MetaMask }}
+                libraryName={'web3.js'}
+                web3Api={Web3}
+              >
+                <Provider store={store}>
+                  <TradePanel />
+                </Provider>
+              </Web3Provider>
+            </div>
           </main>
         </ThemeProvider>
       </div>

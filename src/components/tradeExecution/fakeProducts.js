@@ -42,7 +42,7 @@ export function duplicatesFound(original, ticker) {
 
 export function createDatastructure() {
   const ourAssets = [
-   
+
     "ZRX",
     "ALGO",
     "LINK",
@@ -229,7 +229,7 @@ export function findSubAssetClass(ticker) {
 //ping covalent twice with ticker to get price based on time period select.
 //date format needs to be from=YYYY-MM-DD
 
-const allProducts = [
+export const allProducts = [
   {
     ticker_symbol: "BTC",
     quote_rate: 8592.97,

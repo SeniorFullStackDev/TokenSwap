@@ -2,10 +2,10 @@ import { Web3Provider } from '@ethersproject/providers'
 import { useWeb3React as useWeb3ReactCore } from '@web3-react/core'
 import { useEffect, useState } from 'react'
 import { isMobile } from 'react-device-detect'
-import { injected } from '../connectors'
+import { MetaMask } from '../connectors'
 import { NetworkContextName } from '../constants'
 
-export function useActiveWeb3React(){
+export function useActiveWeb3React() {
   const context = useWeb3ReactCore()
   const contextNetwork = useWeb3ReactCore(NetworkContextName)
   return context.active ? context : contextNetwork
@@ -16,14 +16,14 @@ export function useEagerConnect() {
   const [tried, setTried] = useState(false)
 
   useEffect(() => {
-    injected.isAuthorized().then(isAuthorized => {
+    MetaMask.isAuthorized().then(isAuthorized => {
       if (isAuthorized) {
-        activate(injected, undefined, true).catch(() => {
+        activate(MetaMask, undefined, true).catch(() => {
           setTried(true)
         })
       } else {
         if (isMobile && window.ethereum) {
-          activate(injected, undefined, true).catch(() => {
+          activate(MetaMask, undefined, true).catch(() => {
             setTried(true)
           })
         } else {
@@ -44,7 +44,7 @@ export function useEagerConnect() {
 }
 
 /**
- * Use for network and injected - logs user in
+ * Use for network and MetaMask - logs user in
  * and out after checking what network theyre on
  */
 export function useInactiveListener(suppress = false) {
@@ -56,7 +56,7 @@ export function useInactiveListener(suppress = false) {
     if (ethereum && ethereum.on && !active && !error && !suppress) {
       const handleChainChanged = () => {
         // eat errors
-        activate(injected, undefined, true).catch(error => {
+        activate(MetaMask, undefined, true).catch(error => {
           console.error('Failed to activate after chain changed', error)
         })
       }
@@ -64,7 +64,7 @@ export function useInactiveListener(suppress = false) {
       const handleAccountsChanged = (accounts) => {
         if (accounts.length > 0) {
           // eat errors
-          activate(injected, undefined, true).catch(error => {
+          activate(MetaMask, undefined, true).catch(error => {
             console.error('Failed to activate after accounts changed', error)
           })
         }

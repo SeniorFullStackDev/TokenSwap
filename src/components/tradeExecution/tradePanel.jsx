@@ -18,6 +18,9 @@ import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import { withStyles } from '@material-ui/core/styles';
 import SwapForm from "../Swapform";
+import useWallet from "../../state/wallet/wallet.hooks";
+import { useWeb3Context } from 'web3-react'
+// import { useActiveWeb3React } from '../../hooks'
 
 const MyGrid = styled(Grid)({
   padding: "2% 2% 64px",
@@ -49,13 +52,30 @@ const useStyles = makeStyles((theme) => ({
 export default function TradePanel() {
 
   const classes = useStyles();
+  const { fetchAllTokenList, initWallet } = useWallet();
+  const context = useWeb3Context()
+  // const { account, chainId } = useActiveWeb3React()
 
   const [visibleSwapModal, setVisibleSwapModal] = useState(true);
+  const [baseCrytop, setBaseCryto] = useState("eth");
 
   const onClickTradeCard = (ticker) => {
     console.log("ticker -->", ticker);
     setVisibleSwapModal(true);
+    setBaseCryto(ticker);
   }
+  const handleClose = () => {
+    setVisibleSwapModal(false);
+  }
+
+  useEffect(() => {
+    console.log("account =====>", context.account);
+    if (context.account) {
+      fetchAllTokenList(context.account, 1);
+    } else {
+      initWallet();
+    }
+  }, [context.account]);
 
 
   return (
@@ -105,17 +125,17 @@ export default function TradePanel() {
         aria-labelledby="transition-modal-title"
         aria-describedby="transition-modal-description"
         className={classes.modal}
-        open={true}
-        // onClose={handleClose}
+        open={visibleSwapModal}
+        onClose={handleClose}
         closeAfterTransition
         // BackdropComponent={Backdrop}
         BackdropProps={{
           timeout: 500,
         }}
       >
-        <Fade in={true}>
+        <Fade in={visibleSwapModal}>
           <div className={classes.paper}>
-            <SwapForm baseCryto={"eth"} />
+            <SwapForm baseCryto={baseCrytop} />
           </div>
         </Fade>
       </Modal>

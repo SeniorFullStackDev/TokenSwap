@@ -9,7 +9,7 @@ import { ROUTER_ADDRESS } from '../constants'
 // import { TokenAddressMap } from '../state/lists/hooks'
 
 // returns the checksummed address if the address is valid, otherwise returns false
-export function isAddress(value){
+export function isAddress(value) {
   try {
     return getAddress(value)
   } catch {
@@ -77,7 +77,7 @@ export function getSigner(library, account) {
 }
 
 // account is optional
-export function getProviderOrSigner(library, account){
+export function getProviderOrSigner(library, account) {
   return account ? getSigner(library, account) : library
 }
 
@@ -91,4 +91,30 @@ export function getContract(address, ABI, library, account) {
 
 export function escapeRegExp(string) {
   return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') // $& means the whole matched string
+}
+
+export const toFixed = (x) => {
+  if (Math.abs(x) < 1.0) {
+    var e = parseInt(x.toString().split('e-')[1]);
+    if (e) {
+      x *= Math.pow(10, e - 1);
+      x = '0.' + (new Array(e)).join('0') + x.toString().substring(2);
+    }
+  } else {
+    const str = x.toString();
+    const hcs = str.split('e+')[0];
+    const zcs = str.split('e+')[1];
+    let dexC = 0;
+    if (hcs.includes(".")) {
+      dexC = hcs.split(".")[1].length;
+      x = hcs.split(".")[0] + hcs.split(".")[1]
+    } else {
+      x = hcs;
+    }
+    var e = parseInt(str.split('+')[1]);
+    if (e > 20) {
+      x += (new Array(e + 1 - dexC)).join('0');
+    }
+  }
+  return String(x);
 }

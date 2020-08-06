@@ -1,37 +1,22 @@
-import { configureStore, getDefaultMiddleware } from '@reduxjs/toolkit'
+import createSagaMiddleware from "redux-saga";
 import { save, load } from 'redux-localstorage-simple'
+import { compose, createStore, combineReducers, applyMiddleware } from "redux";
+import application from './application/reducer';
+import wallet from './wallet/wallet.reducer';
+import walletSaga from './wallet/wallet.saga';
 
-import application from './application/reducer'
-// import user from './user/reducer'
-// import transactions from './transactions/reducer'
-// import swap from './swap/reducer'
-// import mint from './mint/reducer'
-// import lists from './lists/reducer'
-// import burn from './burn/reducer'
-// import multicall from './multicall/reducer'
+const sagaMiddleware = createSagaMiddleware();
 
-// import { updateVersion } from './user/actions'
+const rootReducer = combineReducers({
+  application,
+  wallet
+});
 
-const PERSISTED_KEYS = ['user', 'transactions', 'lists']
-
-const store = configureStore({
-  reducer: {
-    application,
-    // user,
-    // transactions,
-    // swap,
-    // mint,
-    // burn,
-    // multicall,
-    // lists
-  },
-  middleware: [...getDefaultMiddleware(), save({ states: PERSISTED_KEYS })],
-  preloadedState: load({ states: PERSISTED_KEYS })
-})
-
-// store.dispatch(updateVersion())
+const store = createStore(
+  rootReducer,
+  undefined,
+  compose(applyMiddleware(sagaMiddleware), window.devToolsExtension ? window.devToolsExtension() : f => f),
+);
+sagaMiddleware.run(walletSaga);
 
 export default store
-
-// export type AppState = ReturnType<typeof store.getState>
-// export type AppDispatch = typeof store.dispatch
