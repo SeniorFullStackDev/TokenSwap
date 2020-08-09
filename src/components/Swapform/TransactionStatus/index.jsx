@@ -13,7 +13,7 @@ import useWallet from "../../../state/wallet/wallet.hooks";
 const TransactionStatus = () => {
 
     const open = true;
-    const { transactionStatus, initTransactionStatus } = useWallet();
+    const { selectedPair, transactionStatus, initTransactionStatus } = useWallet();
 
     useEffect(() => {
     }, [transactionStatus])
@@ -23,7 +23,7 @@ const TransactionStatus = () => {
         initTransactionStatus();
     }
 
-    if (transactionStatus.waiting) {
+    if (transactionStatus.waiting && transactionStatus.step == "confirm") {
         return (
             <div className={classes.container}>
                 <h3>{transactionStatus.message}</h3>

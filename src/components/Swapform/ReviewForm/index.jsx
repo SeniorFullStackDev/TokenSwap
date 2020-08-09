@@ -6,15 +6,19 @@ import {
 } from '@material-ui/core';
 import CloseIcon from '@material-ui/icons/Close';
 import classes from "./style.module.scss";
+import useWallet from "../../../state/wallet/wallet.hooks";
 
-export default function ReviewForm({ open, detail, onClose }) {
+export default function ReviewForm({ open, onClose }) {
 
-    const sellAmount = detail.sellAmount;
-    const buyAmount = detail.buyAmount;
-    const selectedPair = detail.selectedPair;
-    
+    const { selectedPair, transactionData, confirmTransaction, transactionStatus } = useWallet();
+    const { sellAmount, buyAmount } = selectedPair;
+
+    useEffect(() => {
+    }, [selectedPair])
+
+
     const onClickReviewOrderBtn = () => {
-
+        confirmTransaction();
     }
 
     if (open) {
@@ -42,10 +46,15 @@ export default function ReviewForm({ open, detail, onClose }) {
                     </div>
                     <div className={classes.detailRate}>
                         <div>Rate</div>
-                        <div>{selectedPair.price} @ {selectedPair.target.symbol}</div>
+                        <div>1{selectedPair.target.symbol} @ {parseFloat(1 / selectedPair.price).toFixed(5)}{selectedPair.base.symbol}</div>
+                    </div>
+                    <div className={classes.detailFee}>
+                        <div>protocolFee</div>
+                        <div>{(transactionData.protocolFee) / (10 ** 18)} ETH</div>
                     </div>
                     <div className={classes.placeOrderBtnContainer}>
-                        <Button className={classes.reviewBtn} variant="outlined" color="primary" onClick={onClickReviewOrderBtn} >Review Limit Order</Button>
+                        {transactionStatus.step != "confirm" && <Button className={classes.reviewBtn} variant="outlined" color="primary" onClick={onClickReviewOrderBtn}>Place Order</Button>}
+                        {transactionStatus.step == "confirm" && <Button className={classes.reviewBtn} variant="outlined" color="primary">Confirm in Wallet</Button>}
                     </div>
                 </div>
             </div>
@@ -57,11 +66,9 @@ export default function ReviewForm({ open, detail, onClose }) {
 
 ReviewForm.propTypes = {
     open: PropTypes.bool,
-    detail: PropTypes.instanceOf(Object),
     onClose: PropTypes.func
 };
 ReviewForm.defaultProps = {
     open: false,
-    detail: {},
     onClose: () => { },
 };

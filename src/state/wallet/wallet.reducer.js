@@ -7,14 +7,19 @@ const initialState = {
         base: {}, //sell
         target: {}, //buy
         price: 0,
-        orderType: "Market"
+        orderType: "Market",
+        sellAmount: 0,
+        buyAmount: 0
     },
     priceList: {},
     transactionStatus: {
         waiting: false,
         expirationTimeSeconds: 0,
-        message: ""
-    }
+        message: "",
+        step: ""
+    },
+    transactionData: {},
+    transactionHistory: []
 };
 
 const reducer = {
@@ -29,18 +34,34 @@ const reducer = {
         let { token, type } = data;
         return {
             ...state,
-            selectedPair: { ...state.selectedPair, [type]: token }
+            selectedPair: { ...state.selectedPair, [type]: token, price: 0, buyAmount: 0 }
+        }
+    },
+    [actions.setSellAmount]: (state, data) => {
+        let { sellAmount } = data;
+        let price = state.selectedPair.price;
+        let buyAmount = parseFloat(price) * parseFloat(sellAmount);
+        return {
+            ...state,
+            selectedPair: { ...state.selectedPair, sellAmount, buyAmount }
+        }
+    },
+    [actions.setBuyAmount]: (state, data) => {
+        let { buyAmount } = data;
+        let price = state.selectedPair.price;
+        let sellAmount = parseFloat(buyAmount) / parseFloat(price);
+        return {
+            ...state,
+            selectedPair: { ...state.selectedPair, sellAmount, buyAmount }
         }
     },
     [actions.setSelectedPairPrice]: (state, data) => {
         let { price } = data;
-        if (state.selectedPair.orderType == "Market") {
-            return {
-                ...state,
-                selectedPair: { ...state.selectedPair, price }
-            }
-        } else {
-            return state;
+        let { sellAmount } = state.selectedPair;
+        let buyAmount = parseFloat(price) * parseFloat(sellAmount);
+        return {
+            ...state,
+            selectedPair: { ...state.selectedPair, price, sellAmount, buyAmount }
         }
     },
     [actions.setTokenPriceList]: (state, data) => {
@@ -50,7 +71,7 @@ const reducer = {
             priceList
         }
     },
-    [actions.setTransactionStarted]: (state, data) => {
+    [actions.setTransactionProgress]: (state, data) => {
         let { transactionStatus } = data;
         console.log("transactionStatus ===>", transactionStatus);
         return {
@@ -60,9 +81,11 @@ const reducer = {
     },
     [actions.setPairPrice]: (state, data) => {
         let { price } = data;
+        let { sellAmount } = state.selectedPair;
+        let buyAmount = parseFloat(price) * parseFloat(sellAmount);
         return {
             ...state,
-            selectedPair: { ...state.selectedPair, price }
+            selectedPair: { ...state.selectedPair, price, sellAmount, buyAmount }
         }
     },
     [actions.setOrderType]: (state, data) => {
@@ -72,8 +95,37 @@ const reducer = {
             selectedPair: { ...state.selectedPair, orderType }
         }
     },
+    [actions.swapSelectedPair]: (state, data) => {
+        const baseToken = state.selectedPair.target;
+        const targetToken = state.selectedPair.base;
+        const sellAmount = state.selectedPair.buyAmount;
+        let price = 0;
+        if (state.selectedPair.price != 0) {
+            price = 1 / state.selectedPair.price;
+        }
+        const buyAmount = price * sellAmount;
+
+        return {
+            ...state,
+            selectedPair: { ...state.selectedPair, base: baseToken, target: targetToken, price, buyAmount, sellAmount }
+        }
+    },
     [actions.initWallet]: (state, data) => {
         return initialState;
+    },
+    [actions.setTransactionData]: (state, data) => {
+        const { transactionData } = data;
+        return {
+            ...state,
+            transactionData
+        }
+    },
+    [actions.setTransactionHistory]: (state, data) => {
+        let transactionHistory = Array.from(data.transactionHistory);
+        return {
+            ...state,
+            transactionHistory
+        }
     }
 };
 

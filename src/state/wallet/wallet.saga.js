@@ -6,6 +6,7 @@ import { toFixed } from "../../utils";
 
 const getSelectedPair = (state) => state.wallet.selectedPair;
 const getTokenPriceList = (state) => state.wallet.priceList;
+const getTransactonData = (state) => state.wallet.transactionData;
 
 function* fetchTokenList(data) {
     const { account, ChainId } = data.payload;
@@ -72,36 +73,47 @@ function* fetchSelectedPair(data) {
 }
 
 function* fetchSwapQuote(data) {
-    const { sellAmount, buyAmount, orderType, account } = data.payload;
+    const { orderType, account } = data.payload;
     let selectedPair = yield select(getSelectedPair);
+    const { sellAmount, buyAmount } = selectedPair;
     const selamt = parseFloat(sellAmount) * (10 ** parseInt(selectedPair.base.decimals));
     const buyamt = parseFloat(buyAmount) * (10 ** parseInt(selectedPair.target.decimals));
     const maxApproval = parseFloat(selectedPair.base.balance) * (10 ** parseInt(selectedPair.target.decimals));
-    yield put(actions.setTransactionStarted({ waiting: true, message: "Transasction Progressing..." }));
+    yield put(actions.setTransactionProgress({ waiting: true, message: "Review Market Order", step: "review" }));
 
     try {
-
         if (selectedPair.base.symbol != "ETH") {
+            yield put(actions.setTransactionProgress({ waiting: true, message: `waiting`, step: "approve" }));
             let approvedData = yield ethClient.approveToken(account, selectedPair.base.address, maxApproval);
-            console.log("approvedData ===>", approvedData);
+            yield put(actions.setTransactionProgress({ waiting: true, message: `done` }));
         }
-
         let transactonData = yield OXApi.getQuote(selectedPair.target.symbol, selectedPair.base.symbol, buyamt);
         transactonData.from = account;
         const expirationTimeSeconds = transactonData.orders[0].expirationTimeSeconds;
-        yield put(actions.setTransactionStarted({ waiting: true, expirationTimeSeconds }));
-        const txResult = yield ethClient.excuteTransaction(transactonData);
-        console.log("txData ===>", txResult);
-        yield put(actions.setTransactionStarted({ message: "Transaction Successful!" }));
+        yield put(actions.setTransactionData(transactonData));
+        yield put(actions.setTransactionProgress({ waiting: true, expirationTimeSeconds, message: "Review Market Order", step: "review" }));
 
     } catch (e) {
         console.log(e);
-        yield put(actions.setTransactionStarted({ expirationTimeSeconds: 0, message: "Transaction Failed!" }));
     }
 }
 
+function* confirmTransaction() {
+    let transactonData = yield select(getTransactonData);
+    try {
+        yield put(actions.setTransactionProgress({ step: "confirm", message: "Progressing" }));
+        const txResult = yield ethClient.excuteTransaction(transactonData);
+        console.log("txData ===>", txResult);
+        yield put(actions.setTransactionProgress({ step: "confirm", message: "Successful" }));
+    } catch (e) {
+        console.log("E ===========>", e);
+        yield put(actions.setTransactionProgress({ expirationTimeSeconds: 0, message: "Transaction Failed!" }));
+    }
+
+}
+
 function* initTransactionStatus() {
-    yield put(actions.setTransactionStarted({ waiting: false, expirationTimeSeconds: 0, message: "" }));
+    yield put(actions.setTransactionProgress({ waiting: false, expirationTimeSeconds: 0, message: "" }));
 }
 
 function* fetchOrderConfig(data) {
@@ -120,6 +132,18 @@ function* fetchOrderConfig(data) {
 
 }
 
+function* getTransactionsByAccount(data) {
+    const { account } = data.payload;
+    console.log("account ====>", account);
+    try {
+        let transactions = yield ethClient.getTransactionsByAccount(account);
+        console.log("transactions ---->", transactions);
+        yield put(actions.setTransactionHistory(transactions));
+    } catch (e) {
+        console.log(e);
+    }
+}
+
 export default function* walletSaga() {
     yield takeEvery(actions.fetchAllTokenListSaga, fetchTokenList);
     yield takeEvery(actions.fetchTokenBalaneSaga, fetchTokenBalanceList);
@@ -127,4 +151,6 @@ export default function* walletSaga() {
     yield takeEvery(actions.swapQuoteSaga, fetchSwapQuote);
     yield takeEvery(actions.initTransactionStatus, initTransactionStatus);
     yield takeEvery(actions.fetchOrderConfigSaga, fetchOrderConfig);
+    yield takeEvery(actions.confirmTransactionSaga, confirmTransaction);
+    yield takeEvery(actions.getTransactionsByAccountSaga, getTransactionsByAccount);
 } 

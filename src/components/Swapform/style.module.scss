@@ -25,6 +25,7 @@
     padding: 20px;
 }
 .targetToken {
+    position: relative;
     border-radius: 10px;
     background-color: #eee;
     padding: 20px;
@@ -62,4 +63,12 @@
 }
 .formControl{
     width: 180px;
+}
+
+.swapBtn {
+    position: absolute !important;
+    background: rgb(255, 255, 255) !important;
+    border: 2px solid rgb(238, 238, 238) !important;
+    background-color: white !important;
+    top: -24px !important;
 }

@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react'
 
 import styled from 'styled-components'
 
-import { useActiveWeb3React } from '../../hooks'
+import { useWeb3Context } from 'web3-react'
 import Jazzicon from 'jazzicon'
 
 const StyledIdenticon = styled.div`
@@ -13,9 +13,7 @@ const StyledIdenticon = styled.div`
 
 export default function Identicon() {
   const ref = useRef()
-
-  const { account } = useActiveWeb3React()
-
+  const { account } = useWeb3Context()
   useEffect(() => {
     if (account && ref.current) {
       ref.current.innerHTML = ''

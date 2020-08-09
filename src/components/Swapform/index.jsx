@@ -18,12 +18,14 @@ import {
 } from '@material-ui/core';
 import Select from '@material-ui/core/Select';
 import FormControl from '@material-ui/core/FormControl';
+import SwapVertIcon from '@material-ui/icons/SwapVert';
 
 import { AccessAlarm, MoreVert } from '@material-ui/icons';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 // import MoreVertIcon from '@material-ui/icons/MoreVert';
 import useWallet from "../../state/wallet/wallet.hooks";
-import { useActiveWeb3React } from '../../hooks';
+// import { useActiveWeb3React } from '../../hooks';
+import { useWeb3Context } from 'web3-react'
 import ReviewButton from "./ReviewButton";
 
 import TransactionStatus from "./TransactionStatus";
@@ -31,29 +33,36 @@ import classes from "./style.module.scss";
 import TokenList from "./TokenList";
 import ReviewForm from "./ReviewForm";
 import Web3Status from "../Web3Status";
+import ApproveCoinForm from "./ApproveCoinForm";
 
 
 export default function SwapForm({ baseCryto }) {
 
-    const { account, chainId } = useActiveWeb3React()
-    const { orderType, tokens, selectedPair, reviewOrder, setPairPrice, setOrderType } = useWallet();
+    const { account } = useWeb3Context()
+    const { orderType, tokens, selectedPair, transactionData, setSellAmount, setBuyAmount, reviewOrder, setPairPrice, setOrderType, swapSelectedPair, confirmTransaction } = useWallet();
     const [anchorEl, setAnchorEl] = useState(null);
     const [orderActive, setOrderActive] = useState(true);
     const [visibleTokenList, setVisibleTokenList] = useState({ open: false, target: "base" });
     const [expireDate, setExpireDate] = useState(24);
     const [reviewFormOpen, setReviewformOpen] = useState(false);
-    const [sellAmount, setSellAmount] = useState(0);
-    const [buyAmount, setBuyAmount] = useState(0);
-
-    const sellInputRef = React.createRef();
-    const buyInputRef = React.createRef();
-    const limitPriceInputRef = React.createRef();
+    const [approveFormOpen, setApproveFormOpen] = useState(false);
+    const { price, sellAmount, buyAmount } = selectedPair;
 
     useEffect(() => {
-        if (sellInputRef.current) {
-            updateBuyAmount(sellInputRef.current.value);
+        console.log("selectedPair ====>", selectedPair.base.balance, sellAmount)
+        if (parseFloat(selectedPair.base.balance) < sellAmount) {
+            setOrderActive(false);
+        } else {
+            setOrderActive(true);
         }
     }, [selectedPair])
+
+    useEffect(() => {
+        console.log(transactionData);
+        if (transactionData.data) {
+            setReviewformOpen(true);
+        }
+    }, [transactionData])
 
     const handleClick = (event) => {
         setAnchorEl(event.currentTarget);
@@ -78,53 +87,30 @@ export default function SwapForm({ baseCryto }) {
     const onChangeInput = (e) => {
         console.log(e.target.name, e.target.value);
         if (e.target.name == "sellAmount") {
-            updateBuyAmount(e.target.value);
+            setSellAmount(e.target.value);
         }
         if (e.target.name == "buyAmount") {
-            updateSellAmount(e.target.value);
+            setBuyAmount(e.target.value);
         }
         if (e.target.name == "limitPrice") {
             setPairPrice(e.target.value);
         }
-
-        const sellAmount = sellInputRef.current.value;
-        if (selectedPair.base.balance < sellAmount) {
-            setOrderActive(false);
-        } else {
-            setOrderActive(true);
-        }
     }
 
-    const updateBuyAmount = (sellAmount) => {
-        const pairPrice = parseFloat(selectedPair.price);
-        const amount = (pairPrice * parseFloat(sellAmount)).toFixed(2);
-        if (buyInputRef.current) buyInputRef.current.value = amount;
-        setSellAmount(amount);
-        setBuyAmount(buyAmount);
-    }
-
-    const updateSellAmount = (buyAmount) => {
-        const pairPrice = parseFloat(selectedPair.price);
-        const amount = (1 / pairPrice * parseFloat(buyAmount)).toFixed(2);
-        if (sellInputRef.current) sellInputRef.current.value = amount;
-        setSellAmount(amount);
-        setBuyAmount(buyAmount);
-    }
 
     const onClickReviewOrderBtn = () => {
-        const sellAmount = sellInputRef.current.value;
-        const buyAmount = buyInputRef.current.value;
         const sellToken = selectedPair.base.symbol;
         const buyToken = selectedPair.target.symbol;
-        if (orderType == "Limit") {
-            setReviewformOpen(true);
+
+        if (sellToken != "ETH") {
+            setApproveFormOpen(true);
         } else {
             //market order
             reviewOrder(sellAmount, buyAmount, orderType, account);
         }
     }
 
-    const onCloseLimitOrderReview = () => {
+    const onCloseRevewiForm = () => {
         setReviewformOpen(false);
     }
 
@@ -132,7 +118,9 @@ export default function SwapForm({ baseCryto }) {
         setExpireDate(e.target.value);
     }
 
-
+    const swapPaire = () => {
+        swapSelectedPair();
+    }
     return (
         <div className={classes.swapFormContainer}>
             <Web3Status />
@@ -160,59 +148,37 @@ export default function SwapForm({ baseCryto }) {
                         {selectedPair.base.symbol && <span className={(orderActive) ? classes.orderActive : classes.orderDective}>Max {parseFloat(selectedPair.base.balance).toFixed(8)}</span>}
                     </div>
                     <div className={classes.tokenInputContainer}>
-                        <Button onClick={onOpenTokenList("target")}><div className={classes.tokenBtn}>{(selectedPair.base.symbol) ? selectedPair.base.symbol : "Choose Token"}</div> <ExpandMoreIcon /></Button>
+                        <Button onClick={onOpenTokenList("base")}><div className={classes.tokenBtn}>{(selectedPair.base.symbol) ? selectedPair.base.symbol : "Choose Token"}</div> <ExpandMoreIcon /></Button>
                         {
                             selectedPair.base.symbol &&
-                            <TextField className={classes.tokenInput} label="" variant="outlined" name="sellAmount" onChange={onChangeInput} inputRef={sellInputRef} />
+                            <TextField className={classes.tokenInput} label="" variant="outlined" name="sellAmount" value={sellAmount} onChange={onChangeInput} />
 
                         }
                     </div>
-                    {orderType == "Limit" &&
-                        <>
-                            <div className={classes.tokenInputContainer}>
-                                <div className={classes.label}>Limit Price</div>
-                                <TextField className={classes.tokenInput} label="" variant="outlined" name="limitPrice" onChange={onChangeInput} inputRef={limitPriceInputRef} />
-                            </div>
-                            <div className={classes.tokenInputContainer}>
-                                <div className={classes.label}>Expires In</div>
-                                <FormControl variant="outlined" className={classes.formControl}>
-                                    <Select
-                                        native
-                                        value={expireDate}
-                                        onChange={onChangeExpireDate}
-                                        inputProps={{
-                                            name: 'expireDate'
-                                        }}
-                                    >
-                                        <option value={1}>24 Hours</option>
-                                        <option value={3}>3 Days</option>
-                                        <option value={7}>7 Days</option>
-                                        <option value={0}>Untill Canceled</option>
-                                    </Select>
-                                </FormControl>
-                            </div>
-                        </>
-                    }
                 </div>
                 <div className={classes.targetToken}>
-                    <IconButton>this</IconButton>
+                    <IconButton className={classes.swapBtn} onClick={swapPaire}>
+                        <SwapVertIcon />
+                    </IconButton>
                     <div className={classes.header}>
                         <span>You Receive</span>
-                        {selectedPair.price && <span>1{selectedPair.base.symbol}={parseFloat(selectedPair.price).toFixed(2)}{selectedPair.target.symbol}</span>}
+                        {selectedPair.price && <span>1{selectedPair.base.symbol}={parseFloat(selectedPair.price).toFixed(4)}{selectedPair.target.symbol}</span>}
                     </div>
                     <div className={classes.tokenInputContainer}>
                         <Button onClick={onOpenTokenList("target")}><div className={classes.tokenBtn}>{(selectedPair.target.symbol) ? selectedPair.target.symbol : "Choose Token"}</div> <ExpandMoreIcon /></Button>
                         {
                             selectedPair.target.symbol &&
-                            <TextField className={classes.tokenInput} label="" variant="outlined" name="buyAmount" onChange={onChangeInput} inputRef={buyInputRef} />
+                            <TextField className={classes.tokenInput} label="" variant="outlined" name="buyAmount" value={buyAmount} onChange={onChangeInput} />
                         }
                     </div>
                     <ReviewButton selectedPair={selectedPair} onClick={onClickReviewOrderBtn} active={orderActive} />
                 </div>
             </div>
             {tokens.length > 0 && <TokenList open={visibleTokenList.open} baseCryto={baseCryto} onChange={onChangeToken} onClose={onCloseTokenList} target={visibleTokenList.target} tokens={tokens} />}
+
+            <ApproveCoinForm open={approveFormOpen} onClose={() => { setApproveFormOpen(false) }} />
+            <ReviewForm open={reviewFormOpen} onClose={onCloseRevewiForm} />
             <TransactionStatus />
-            <ReviewForm open={reviewFormOpen} detail={{ selectedPair, sellAmount, buyAmount }} onClose={onCloseLimitOrderReview} />
         </div>
     )
 }

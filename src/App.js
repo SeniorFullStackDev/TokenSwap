@@ -3,16 +3,10 @@ import { Provider } from 'react-redux'
 import { createMuiTheme, ThemeProvider } from "@material-ui/core/styles";
 import Web3Provider from 'web3-react'
 import config from "./components/common/config";
-import Page from "../src/components/common/Page";
 import "./App.css";
-import { NetworkContextName } from './constants'
 import TradePanel from "./components/tradeExecution/tradePanel";
-
-import Header from "./components/Header";
-import Web3ReactManager from "./components/Web3ReactManager";
 import { MetaMask, Infura } from "./connectors";
 import Web3 from 'web3';
-
 import NotFound from "./components/notFound";
 import store from './state';
 
