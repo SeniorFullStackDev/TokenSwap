@@ -21,3 +21,4 @@ export const setBuyAmount = createAction("set buy amount", (buyAmount) => ({ buy
 export const setTransactionData = createAction("set transaction data", (transactionData) => ({ transactionData }));
 export const getTransactionsByAccountSaga = createAction("getTransactionsByAccountSaga", (account) => ({ account }));
 export const setTransactionHistory = createAction("setTransactionHistory", (transactionHistory) => ({ transactionHistory }));
+export const initSelectedPair = createAction("initSelectedPair");

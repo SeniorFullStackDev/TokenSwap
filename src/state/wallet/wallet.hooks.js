@@ -66,7 +66,11 @@ const useWallet = () => {
     );
 
     const setBuyAmount = useCallback(
-        (amount) => dispatch(walletActions.setSellAmount(amount)),
+        (amount) => dispatch(walletActions.setBuyAmount(amount)),
+        [dispatch]
+    );
+    const initSelectedPair = useCallback(
+        () => dispatch(walletActions.initSelectedPair()),
         [dispatch]
     );
 
@@ -102,7 +106,8 @@ const useWallet = () => {
         fetchSelectedPair,
         setPairPrice,
         reviewOrder,
-        setOrderType
+        setOrderType,
+        initSelectedPair
     };
 };
 

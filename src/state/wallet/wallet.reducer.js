@@ -4,8 +4,12 @@ import * as actions from "./wallet.action";
 const initialState = {
     tokens: [],
     selectedPair: {
-        base: {}, //sell
-        target: {}, //buy
+        base: {
+            balance: 0
+        }, //sell
+        target: {
+            balance: 0
+        }, //buy
         price: 0,
         orderType: "Market",
         sellAmount: 0,
@@ -118,6 +122,19 @@ const reducer = {
         return {
             ...state,
             transactionData
+        }
+    },
+    [actions.initSelectedPair]: (state, data) => {
+        return {
+            ...state,
+            selectedPair: {
+                base: { balance: 0 }, //sell
+                target: { balance: 0 }, //buy
+                price: 0,
+                orderType: "Market",
+                sellAmount: 0,
+                buyAmount: 0
+            }
         }
     },
     [actions.setTransactionHistory]: (state, data) => {

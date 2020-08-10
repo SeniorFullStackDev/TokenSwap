@@ -52,11 +52,11 @@ const useStyles = makeStyles((theme) => ({
 export default function TradePanel() {
 
   const classes = useStyles();
-  const { fetchAllTokenList, initWallet } = useWallet();
+  const { fetchAllTokenList, initWallet, initSelectedPair } = useWallet();
   const context = useWeb3Context()
   // const { account, chainId } = useActiveWeb3React()
 
-  const [visibleSwapModal, setVisibleSwapModal] = useState(true);
+  const [visibleSwapModal, setVisibleSwapModal] = useState(false);
   const [baseCrytop, setBaseCryto] = useState("eth");
 
   const onClickTradeCard = (ticker) => {
@@ -65,6 +65,7 @@ export default function TradePanel() {
     setBaseCryto(ticker);
   }
   const handleClose = () => {
+    initSelectedPair();
     setVisibleSwapModal(false);
   }
 

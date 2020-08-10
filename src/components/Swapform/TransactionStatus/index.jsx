@@ -10,7 +10,7 @@ import HighlightOffIcon from '@material-ui/icons/HighlightOff';
 
 import useWallet from "../../../state/wallet/wallet.hooks";
 
-const TransactionStatus = () => {
+const TransactionStatus = ({ onClickNewOrder }) => {
 
     const open = true;
     const { selectedPair, transactionStatus, initTransactionStatus } = useWallet();
@@ -19,8 +19,9 @@ const TransactionStatus = () => {
     }, [transactionStatus])
 
 
-    const onClickNewOrder = () => {
+    const onClickNewOrderBtn = () => {
         initTransactionStatus();
+        onClickNewOrder();
     }
 
     if (transactionStatus.waiting && transactionStatus.step == "confirm") {
@@ -32,10 +33,10 @@ const TransactionStatus = () => {
                 {transactionStatus.message.includes("Successful") && <CheckCircleOutlineIcon style={{ fontSize: "100px", color: "green" }} />}
                 <div style={{ height: "100px" }}>
                     {transactionStatus.message.includes("Successful") &&
-                        <Button variant="outlined" color="primary" onClick={onClickNewOrder} >New Order</Button>
+                        <Button variant="outlined" color="primary" onClick={onClickNewOrderBtn} >New Order</Button>
                     }
                     {transactionStatus.message.includes("Failed") &&
-                        <Button variant="outlined" color="primary" onClick={onClickNewOrder} >Retry</Button>
+                        <Button variant="outlined" color="primary" onClick={onClickNewOrderBtn} >Retry</Button>
                     }
                 </div>
             </div>

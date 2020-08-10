@@ -26,7 +26,7 @@ export default function ReviewForm({ open, onClose }) {
 
             <div className={classes.container}>
                 <div className={classes.header}>
-                    <div>Review Limit Order</div>
+                    <div>Review Market Order</div>
                     <IconButton aria-controls="simple-menu" aria-haspopup="true" onClick={onClose} className={classes.menuButton}>
                         <CloseIcon />
                     </IconButton>
@@ -49,7 +49,7 @@ export default function ReviewForm({ open, onClose }) {
                         <div>1{selectedPair.target.symbol} @ {parseFloat(1 / selectedPair.price).toFixed(5)}{selectedPair.base.symbol}</div>
                     </div>
                     <div className={classes.detailFee}>
-                        <div>protocolFee</div>
+                        <div>Protocol Fee</div>
                         <div>{(transactionData.protocolFee) / (10 ** 18)} ETH</div>
                     </div>
                     <div className={classes.placeOrderBtnContainer}>

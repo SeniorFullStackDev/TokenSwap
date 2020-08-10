@@ -100,6 +100,7 @@ function* fetchSwapQuote(data) {
 
 function* confirmTransaction() {
     let transactonData = yield select(getTransactonData);
+    console.log("transactonData --->", transactonData);
     try {
         yield put(actions.setTransactionProgress({ step: "confirm", message: "Progressing" }));
         const txResult = yield ethClient.excuteTransaction(transactonData);

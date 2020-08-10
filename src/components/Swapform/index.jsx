@@ -58,6 +58,10 @@ export default function SwapForm({ baseCryto }) {
     }, [selectedPair])
 
     useEffect(() => {
+
+    }, [baseCryto])
+
+    useEffect(() => {
         console.log(transactionData);
         if (transactionData.data) {
             setReviewformOpen(true);
@@ -106,7 +110,7 @@ export default function SwapForm({ baseCryto }) {
             setApproveFormOpen(true);
         } else {
             //market order
-            reviewOrder(sellAmount, buyAmount, orderType, account);
+            reviewOrder(orderType, account);
         }
     }
 
@@ -121,6 +125,16 @@ export default function SwapForm({ baseCryto }) {
     const swapPaire = () => {
         swapSelectedPair();
     }
+
+    const onClickNewOrder = () => {
+        setReviewformOpen(false);
+        setApproveFormOpen(false);
+    }
+
+    const sellBalance = selectedPair.base.balance || 0;
+    const buyBalance = selectedPair.target.balance || 0;
+
+
     return (
         <div className={classes.swapFormContainer}>
             <Web3Status />
@@ -145,13 +159,13 @@ export default function SwapForm({ baseCryto }) {
                 <div className={classes.baseToken}>
                     <div className={classes.header}>
                         <span>You pay</span>
-                        {selectedPair.base.symbol && <span className={(orderActive) ? classes.orderActive : classes.orderDective}>Max {parseFloat(selectedPair.base.balance).toFixed(8)}</span>}
+                        {selectedPair.base.symbol && <span className={(orderActive) ? classes.orderActive : classes.orderDective}>Max {parseFloat(sellBalance).toFixed(8)}</span>}
                     </div>
                     <div className={classes.tokenInputContainer}>
                         <Button onClick={onOpenTokenList("base")}><div className={classes.tokenBtn}>{(selectedPair.base.symbol) ? selectedPair.base.symbol : "Choose Token"}</div> <ExpandMoreIcon /></Button>
                         {
                             selectedPair.base.symbol &&
-                            <TextField className={classes.tokenInput} label="" variant="outlined" name="sellAmount" value={sellAmount} onChange={onChangeInput} />
+                            <TextField className={classes.tokenInput} label="" variant="outlined" name="sellAmount" value={isNaN(sellAmount) ? 0 : sellAmount} onChange={onChangeInput} />
 
                         }
                     </div>
@@ -168,7 +182,7 @@ export default function SwapForm({ baseCryto }) {
                         <Button onClick={onOpenTokenList("target")}><div className={classes.tokenBtn}>{(selectedPair.target.symbol) ? selectedPair.target.symbol : "Choose Token"}</div> <ExpandMoreIcon /></Button>
                         {
                             selectedPair.target.symbol &&
-                            <TextField className={classes.tokenInput} label="" variant="outlined" name="buyAmount" value={buyAmount} onChange={onChangeInput} />
+                            <TextField className={classes.tokenInput} label="" variant="outlined" name="buyAmount" value={isNaN(buyAmount) ? 0 : buyAmount} onChange={onChangeInput} />
                         }
                     </div>
                     <ReviewButton selectedPair={selectedPair} onClick={onClickReviewOrderBtn} active={orderActive} />
@@ -178,7 +192,7 @@ export default function SwapForm({ baseCryto }) {
 
             <ApproveCoinForm open={approveFormOpen} onClose={() => { setApproveFormOpen(false) }} />
             <ReviewForm open={reviewFormOpen} onClose={onCloseRevewiForm} />
-            <TransactionStatus />
+            <TransactionStatus onClickNewOrder={onClickNewOrder} />
         </div>
     )
 }

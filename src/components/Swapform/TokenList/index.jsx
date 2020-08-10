@@ -25,6 +25,10 @@ export default function TokenList({ open, baseCryto, target, onClose, onChange, 
         }
     }, [baseCryto])
 
+    useEffect(() => {
+        setQuery("");
+    }, [open])
+
     const onSelectToken = (selectedToken) => {
         fetchSelectedPair(selectedToken.symbol, target);
         onClose();
